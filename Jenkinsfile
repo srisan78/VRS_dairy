@@ -2,34 +2,37 @@ pipeline {
     agent any
 
     environment {
-        // This must match your Docker Hub ID
         DOCKER_USER = 'sridhar76'
-        CREDENTIALS_ID = 'dockerhub-credentials'
+        CRED_ID = 'dockerhub-credentials'
+        // Unique tags using the Jenkins build number
+        FRONT_IMAGE = "${DOCKER_USER}/vrs-frontend:${BUILD_NUMBER}"
+        BACK_IMAGE  = "${DOCKER_USER}/vrs-backend:${BUILD_NUMBER}"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Adjust to 'master' if your branch is not named 'main'
+                // Ensure the branch name matches your GitHub (main or master)
                 git branch: 'master', url: 'https://github.com/srisan78/VRS_dairy.git'
             }
         }
 
-        stage('Install Backend Dependencies') {
+        stage('Build Frontend') {
             steps {
-                dir('backend') {
-                    sh 'npm install'
+                script {
+                    echo "Building Frontend with Node 20..."
+                    // -f points to the specific frontend file
+                    sh "docker build --no-cache -f Dockerfile.frontend -t ${FRONT_IMAGE} ."
                 }
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Backend') {
             steps {
                 script {
-                    echo "Building images using Docker Compose..."
-                    // This command finds Dockerfile.frontend automatically 
-                    // because it is defined in your docker-compose.yml
-                    sh 'docker-compose build --no-cache'
+                    echo "Building Backend from sub-folder..."
+                    // Points to the ./backend folder context
+                    sh "docker build -t ${BACK_IMAGE} ./backend"
                 }
             }
         }
@@ -37,19 +40,17 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: "${CREDENTIALS_ID}", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    withCredentials([usernamePassword(credentialsId: "${CRED_ID}", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                         sh "echo $PASS | docker login -u $USER --password-stdin"
-                        sh 'docker-compose push'
+                        sh "docker push ${FRONT_IMAGE}"
+                        sh "docker push ${BACK_IMAGE}"
+                        
+                        // Also tagging as 'latest' for convenience
+                        sh "docker tag ${FRONT_IMAGE} ${DOCKER_USER}/vrs-frontend:latest"
+                        sh "docker tag ${BACK_IMAGE} ${DOCKER_USER}/vrs-backend:latest"
+                        sh "docker push ${DOCKER_USER}/vrs-frontend:latest"
+                        sh "docker push ${DOCKER_USER}/vrs-backend:latest"
                     }
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    echo "Starting the Dairy Farm app..."
-                    sh 'docker-compose up -d'
                 }
             }
         }
@@ -57,10 +58,7 @@ pipeline {
 
     post {
         success {
-            echo "SUCCESS: Build # ${BUILD_NUMBER} is live!"
-        }
-        failure {
-            echo "FAILED: Check the console log for Build # ${BUILD_NUMBER}"
+            echo "Successfully built and pushed Build #${BUILD_NUMBER}"
         }
         always {
             cleanWs()
