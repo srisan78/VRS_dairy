@@ -2,64 +2,63 @@ pipeline {
     agent any
 
     environment {
-        FRONTEND_IMAGE = 'vrs-dairy/frontend:latest'
-        BACKEND_IMAGE = 'vrs-dairy/backend:latest'
-        docker_registry = 'docker.io' // Change this to your registry if not using Docker Hub
-        credentials_id = 'dockerhub-credentials' // Jenkins credentials ID for Docker registry
+        DOCKER_USER = 'sridhar76'
+        CRED_ID = 'dockerhub-credentials'
+        // Unique tags using the Jenkins build number
+        FRONT_IMAGE = "${DOCKER_USER}/vrs-frontend:${BUILD_NUMBER}"
+        BACK_IMAGE  = "${DOCKER_USER}/vrs-backend:${BUILD_NUMBER}"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/srisan78/VRS_dairy.git'
-            }
-        }
-
-        stage('Install Frontend Tools') {
-            steps {
-                sh 'npm install'
+                // Ensure the branch name matches your GitHub (main or master)
+                git branch: 'master', url: 'https://github.com/srisan78/VRS_dairy.git'
             }
         }
 
         stage('Build Frontend') {
             steps {
-                sh 'npm run build'
-            }
-        }
-
-        stage('Install Backend Dependencies') {
-            steps {
-                sh 'pip install -r requirements.txt'
-            }
-        }
-
-        stage('Build Docker Images') {
-            steps {
                 script {
-                    echo "Building Docker images using docker-compose..."
-                    sh 'docker-compose build'
+                    echo "Building Frontend with Node 20..."
+                    // -f points to the specific frontend file
+                    sh "docker build --no-cache -f Dockerfile.frontend -t ${FRONT_IMAGE} ."
                 }
             }
         }
 
-        
-        stage('Deploy') {
+        stage('Build Backend') {
             steps {
                 script {
-                    echo "Deploying application using docker-compose..."
-                    sh 'docker-compose up -d'
+                    echo "Building Backend from sub-folder..."
+                    // Points to the ./backend folder context
+                    sh "docker build -t ${BACK_IMAGE} ./backend"
                 }
             }
         }
-        
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${CRED_ID}", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        sh "echo $PASS | docker login -u $USER --password-stdin"
+                        sh "docker push ${FRONT_IMAGE}"
+                        sh "docker push ${BACK_IMAGE}"
+                        
+                        // Also tagging as 'latest' for convenience
+                        sh "docker tag ${FRONT_IMAGE} ${DOCKER_USER}/vrs-frontend:latest"
+                        sh "docker tag ${BACK_IMAGE} ${DOCKER_USER}/vrs-backend:latest"
+                        sh "docker push ${DOCKER_USER}/vrs-frontend:latest"
+                        sh "docker push ${DOCKER_USER}/vrs-backend:latest"
+                    }
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo "Pipeline executed successfully!"
-        }
-        failure {
-            echo "Pipeline failed! Please check the logs."
+            echo "Successfully built and pushed Build #${BUILD_NUMBER}"
         }
         always {
             cleanWs()

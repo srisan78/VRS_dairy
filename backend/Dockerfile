@@ -1,12 +1,13 @@
-FROM python:3.10-slim
-
+FROM node:20-alpine
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy package files and install
+COPY package*.json ./
+RUN npm install --production
 
+# Copy backend source code
 COPY . .
 
 EXPOSE 8000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Update 'server.js' if your main file has a different name
+CMD ["node", "server.js"]
