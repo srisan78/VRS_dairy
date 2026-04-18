@@ -1,9 +1,12 @@
 version: '3.8'
+
 services:
   backend:
     build: 
       context: ./backend
       dockerfile: Dockerfile
+    # This matches the IMAGE_NAME in your Jenkinsfile
+    image: sridhar76/vrs-dairy-backend:latest
     ports:
       - "8000:8000"
     environment:
@@ -17,6 +20,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    # This matches the IMAGE_NAME in your Jenkinsfile
+    image: sridhar76/vrs-dairy-frontend:latest
     ports:
       - "80:80"
     networks:
