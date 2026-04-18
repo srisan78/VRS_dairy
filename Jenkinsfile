@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/srisan78/VRS_dairy.git'
+                 branch 'main' git 'https://github.com/srisan78/VRS_dairy.git'
             }
         }
 
