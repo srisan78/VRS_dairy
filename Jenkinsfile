@@ -34,7 +34,7 @@ pipeline {
                     // This forces Jenkins to look inside the backend directory
                     dir('backend') {
                         // Using '.' because we are now already inside the folder
-                        sh "docker build -t sridhar76/vrs-backend:${BUILD_NUMBER} ."
+                       sh "docker build --no-cache -t sridhar76/vrs-backend:${BUILD_NUMBER} ."
                     }
                 }
             }
