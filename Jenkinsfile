@@ -28,9 +28,9 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    echo "Building Docker images using docker-compose..."
+                    echo "Building all images (Frontend & Backend) using Docker Compose..."
                     // ADDED --no-cache to fix the Tailwind "Native Binding" bug
-                    sh 'docker-compose build --no-cache'
+                   sh 'docker-compose build --no-cache'
                 }
             }
         }
