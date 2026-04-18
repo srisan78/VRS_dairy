@@ -4,12 +4,14 @@ pipeline {
     environment {
         FRONTEND_IMAGE = 'vrs-dairy/frontend:latest'
         BACKEND_IMAGE = 'vrs-dairy/backend:latest'
+        docker_registry = 'docker.io' // Change this to your registry if not using Docker Hub
+        credentials_id = 'dockerhub-credentials' // Jenkins credentials ID for Docker registry
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git 'https://github.com/srisan78/VRS_dairy.git'
             }
         }
 
@@ -40,13 +42,16 @@ pipeline {
             }
         }
 
-        /* 
+        
         stage('Deploy') {
             steps {
-                // Add deployment steps here (e.g. push to ECR/GCR, deploy to Kubernetes, etc)
+                script {
+                    echo "Deploying application using docker-compose..."
+                    sh 'docker-compose up -d'
+                }
             }
         }
-        */
+        
     }
 
     post {
