@@ -18,10 +18,10 @@ pipeline {
 
         stage('Build Frontend') {
             steps {
-                dir('frontend') {
+                
                     sh 'npm run build'
                 }
-            }
+            
         }
 
         stage('Install Backend Dependencies') {
