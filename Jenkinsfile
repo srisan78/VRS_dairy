@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_USER = 'sridhar76'
-        CRED_ID = 'dockerhub-credentials'
+        CRED_ID = 'docker-hub-creds'
         // Unique tags using the Jenkins build number
         FRONT_IMAGE = "${DOCKER_USER}/vrs-frontend:${BUILD_NUMBER}"
         BACK_IMAGE  = "${DOCKER_USER}/vrs-backend:${BUILD_NUMBER}"
