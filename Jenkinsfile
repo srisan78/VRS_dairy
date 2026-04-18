@@ -16,20 +16,6 @@ pipeline {
             }
         }
 
-        stage('Install & Build Frontend') {
-    steps {
-        sh '''
-            # 1. Clean up and install
-            rm -rf node_modules
-            npm install
-            
-            # 2. Verify vite exists and run build using the local binary
-            # This avoids "command not found" issues
-            ./node_modules/.bin/vite build
-        '''
-    }
-}
-
         stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
