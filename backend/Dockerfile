@@ -1,19 +1,13 @@
-# Use Node.js, not Python!
 FROM node:20-alpine
-
-# Create app directory
 WORKDIR /app
 
-# Install dependencies
-# This looks for your package.json file
+# Copy package files and install
 COPY package*.json ./
-RUN npm install
+RUN npm install --production
 
-# Bundle app source
+# Copy backend source code
 COPY . .
 
-# Your docker-compose says the backend uses port 8000
 EXPOSE 8000
-
-# This starts your Node server
-CMD ["node", "index.js"]
+# Update 'server.js' if your main file has a different name
+CMD ["node", "server.js"]
