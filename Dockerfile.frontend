@@ -1,9 +1,12 @@
-FROM node:18 AS build
-
+# Changed from node:18 to node:20
+FROM node:20 AS build
 WORKDIR /app
+
 COPY package*.json ./
+# Clean install to ensure no version conflicts
 RUN rm -rf node_modules package-lock.json
 RUN npm install
+
 COPY . .
 RUN npm run build
 
