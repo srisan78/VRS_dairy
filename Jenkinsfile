@@ -4,19 +4,21 @@ pipeline {
     environment {
         FRONTEND_IMAGE = 'vrs-dairy/frontend:latest'
         BACKEND_IMAGE = 'vrs-dairy/backend:latest'
-        docker_registry = 'docker.io' // Change this to your registry if not using Docker Hub
-        credentials_id = 'dockerhub-credentials' // Jenkins credentials ID for Docker registry
+        DOCKER_REGISTRY = 'docker.io'
+        CREDENTIALS_ID = 'dockerhub-credentials'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                 branch 'main' git 'https://github.com/srisan78/VRS_dairy.git'
+                // Fixed syntax: Using the git step correctly
+                git branch: 'main', url: 'https://github.com/srisan78/VRS_dairy.git'
             }
         }
 
         stage('Install Frontend Tools') {
             steps {
+                // Ensure you are in the correct directory if frontend is in a subfolder
                 sh 'npm install'
             }
         }
@@ -29,7 +31,12 @@ pipeline {
 
         stage('Install Backend Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                // Using a virtual env is safer for Jenkins agents
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r requirements.txt
+                '''
             }
         }
 
@@ -37,29 +44,29 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker images using docker-compose..."
+                    // Ensure docker-compose.yml exists in the root
                     sh 'docker-compose build'
                 }
             }
         }
 
-        
         stage('Deploy') {
             steps {
                 script {
                     echo "Deploying application using docker-compose..."
+                    // -d runs in detached mode so the Jenkins job doesn't hang
                     sh 'docker-compose up -d'
                 }
             }
         }
-        
     }
 
     post {
         success {
-            echo "Pipeline executed successfully!"
+            echo "Pipeline executed successfully! App is live."
         }
         failure {
-            echo "Pipeline failed! Please check the logs."
+            echo "Pipeline failed! Check the console output."
         }
         always {
             cleanWs()
