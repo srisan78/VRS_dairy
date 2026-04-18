@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        FRONTEND_IMAGE = 'vrs-dairy/frontend:latest'
-        BACKEND_IMAGE = 'vrs-dairy/backend:latest'
+        // Updated to use your Docker Hub ID sridhar76
+        FRONTEND_IMAGE = 'sridhar76/vrs-dairy-frontend:latest'
+        BACKEND_IMAGE = 'sridhar76/vrs-dairy-backend:latest'
         DOCKER_REGISTRY = 'docker.io'
         CREDENTIALS_ID = 'dockerhub-credentials'
     }
@@ -11,20 +12,15 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-            
-                git branch: 'main', url: 'https://github.com/srisan78/VRS_dairy.git'
+                git branch: 'master', url: 'https://github.com/srisan78/VRS_dairy.git'
             }
         }
 
         stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
-                    // Using a virtual env is safer for Jenkins agents
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install -r requirements.txt
-                    '''
+                    // FIXED: Removed Python commands, replaced with Node.js
+                    sh 'npm install'
                 }
             }
         }
@@ -33,8 +29,20 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker images using docker-compose..."
-                    // Ensure docker-compose.yml exists in the root
-                    sh 'docker-compose build'
+                    // ADDED --no-cache to fix the Tailwind "Native Binding" bug
+                    sh 'docker-compose build --no-cache'
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    // This logs you in so you can actually push your images
+                    withCredentials([usernamePassword(credentialsId: "${CREDENTIALS_ID}", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        sh "echo $PASS | docker login -u $USER --password-stdin"
+                        sh 'docker-compose push'
+                    }
                 }
             }
         }
@@ -43,7 +51,6 @@ pipeline {
             steps {
                 script {
                     echo "Deploying application using docker-compose..."
-                    // -d runs in detached mode so the Jenkins job doesn't hang
                     sh 'docker-compose up -d'
                 }
             }
@@ -58,6 +65,7 @@ pipeline {
             echo "Pipeline failed! Check the console output."
         }
         always {
+            // Cleans up the workspace but keeps the app running in Docker
             cleanWs()
         }
     }
