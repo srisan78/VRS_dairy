@@ -18,25 +18,31 @@ pipeline {
 
         stage('Install Frontend Tools') {
             steps {
-                // Ensure you are in the correct directory if frontend is in a subfolder
-                sh 'npm install'
+                dir('frontend') {
+                    // Ensure you are in the correct directory if frontend is in a subfolder
+                    sh 'npm install'
+                }
             }
         }
 
         stage('Build Frontend') {
             steps {
-                sh 'npm run build'
+                dir('frontend') {
+                    sh 'npm run build'
+                }
             }
         }
 
         stage('Install Backend Dependencies') {
             steps {
-                // Using a virtual env is safer for Jenkins agents
-                sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install -r requirements.txt
-                '''
+                dir('backend') {
+                    // Using a virtual env is safer for Jenkins agents
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                    '''
+                }
             }
         }
 
