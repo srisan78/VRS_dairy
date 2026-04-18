@@ -1,16 +1,20 @@
-FROM node:20-alpine
+# Use Python instead of Node
+FROM python:3.10-slim
+
 WORKDIR /app
 
-# The * helps if there are hidden characters or case issues
-COPY package*.json ./
+# Copy the requirements file first to leverage Docker cache
+# If you don't have this file yet, see step 2 below
+COPY requirements.txt .
 
-# Verify the file is there before running npm install
-RUN ls -l
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Use --omit=dev as recommended by the new npm version
-RUN npm install --omit=dev
-
+# Copy the rest of the backend code (including main.py)
 COPY . .
 
 EXPOSE 8000
-CMD ["node", "server.js"]
+
+# Start the Python application
+# If using FastAPI/Uvicorn:
+CMD ["python", "main.py"]

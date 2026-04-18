@@ -30,6 +30,7 @@ pipeline {
        stage('Build Backend') {
             steps {
                 script {
+                    sh "ls -R"
                     echo "Moving into backend folder and building..."
                     // This forces Jenkins to look inside the backend directory
                     dir('backend') {
