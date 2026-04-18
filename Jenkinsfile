@@ -16,15 +16,6 @@ pipeline {
             }
         }
 
-        stage('Install Frontend Tools') {
-            steps {
-                dir('frontend') {
-                    // Ensure you are in the correct directory if frontend is in a subfolder
-                    sh 'npm install'
-                }
-            }
-        }
-
         stage('Build Frontend') {
             steps {
                 dir('frontend') {
