@@ -2,16 +2,15 @@ pipeline {
     agent any
 
     environment {
-        // Updated to use your Docker Hub ID sridhar76
-        FRONTEND_IMAGE = 'sridhar76/vrs-dairy-frontend:latest'
-        BACKEND_IMAGE = 'sridhar76/vrs-dairy-backend:latest'
-        DOCKER_REGISTRY = 'docker.io'
+        // This must match your Docker Hub ID
+        DOCKER_USER = 'sridhar76'
         CREDENTIALS_ID = 'dockerhub-credentials'
     }
 
     stages {
         stage('Checkout') {
             steps {
+                // Adjust to 'master' if your branch is not named 'main'
                 git branch: 'master', url: 'https://github.com/srisan78/VRS_dairy.git'
             }
         }
@@ -19,7 +18,6 @@ pipeline {
         stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
-                    // FIXED: Removed Python commands, replaced with Node.js
                     sh 'npm install'
                 }
             }
@@ -28,9 +26,10 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    echo "Building all images (Frontend & Backend) using Docker Compose..."
-                    // ADDED --no-cache to fix the Tailwind "Native Binding" bug
-                   sh 'docker-compose build --no-cache'
+                    echo "Building images using Docker Compose..."
+                    // This command finds Dockerfile.frontend automatically 
+                    // because it is defined in your docker-compose.yml
+                    sh 'docker-compose build --no-cache'
                 }
             }
         }
@@ -38,7 +37,6 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    // This logs you in so you can actually push your images
                     withCredentials([usernamePassword(credentialsId: "${CREDENTIALS_ID}", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                         sh "echo $PASS | docker login -u $USER --password-stdin"
                         sh 'docker-compose push'
@@ -50,7 +48,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    echo "Deploying application using docker-compose..."
+                    echo "Starting the Dairy Farm app..."
                     sh 'docker-compose up -d'
                 }
             }
@@ -59,13 +57,12 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline executed successfully! App is live."
+            echo "SUCCESS: Build # ${BUILD_NUMBER} is live!"
         }
         failure {
-            echo "Pipeline failed! Check the console output."
+            echo "FAILED: Check the console log for Build # ${BUILD_NUMBER}"
         }
         always {
-            // Cleans up the workspace but keeps the app running in Docker
             cleanWs()
         }
     }
