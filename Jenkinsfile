@@ -27,12 +27,15 @@ pipeline {
             }
         }
 
-        stage('Build Backend') {
+       stage('Build Backend') {
             steps {
                 script {
-                    echo "Building Backend from sub-folder..."
-                    // Points to the ./backend folder context
-                    sh "docker build -t ${BACK_IMAGE} ./backend"
+                    echo "Moving into backend folder and building..."
+                    // This forces Jenkins to look inside the backend directory
+                    dir('backend') {
+                        // Using '.' because we are now already inside the folder
+                        sh "docker build -t sridhar76/vrs-backend:${BUILD_NUMBER} ."
+                    }
                 }
             }
         }
