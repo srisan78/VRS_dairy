@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-green: #4CAF50;
+  --color-primary-green-dark: #2D5A27;
+  --color-light-blue: #E3F2FD;
+  --color-white: #ffffff;
+  
+  --color-farm-green: #2D5A27;
+  --color-meadow-green: #4CAF50;
+  --color-milk-white: #FDFDFD;
+  --color-sky-blue: #E3F2FD;
+  --color-soft-cream: #F9FBF9;
+  --color-text-dark: #1F2937;
+  --color-text-light: #6B7280;
+  --color-accent-blue: #2196F3;
+  
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-serif: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+body {
+  font-family: theme("fontFamily.sans");
+  background-color: theme("colors.soft.cream");
+  color: theme("colors.text.dark");
+}
+
+.font-serif {
+  font-family: theme("fontFamily.sans");
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(253, 253, 253, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(253, 253, 253, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+}
+
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.bg-hero-pattern {
+  background: linear-gradient(rgba(45, 90, 39, 0.8), rgba(45, 90, 39, 0.8)), 
+              repeating-radial-gradient(circle at 0 0, transparent 0, #2D5A27 40px), 
+              #3a6b32;
+}
+
+.shadow-login {
+  box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+}
