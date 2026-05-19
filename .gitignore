@@ -1,0 +1,14 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+# Terraform providers (important)
+Terraform/providers/
+
+# Kubernetes binary
+kubectl
+
+# OS files
+.DS_Store

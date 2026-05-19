@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: ingress
+metadata:
+  name: vrs-dairy-ingress
+spec:
+  rules:  
+  - http:
+      paths:
+       - path: /
+         pathType: Prefix
+         backend:
+           service:
+             name: vrs-dairy-service
+             port:
+               number: 80
+              

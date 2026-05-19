@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vrs-dairy-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vrs-dairy
+  template:
+    metadata:
+      labels:
+        app: vrs-dairy
+    spec:
+      containers: # Removed 'type: LoadBalancer' from here
+      - name: vrs-dairy-container
+        image: sridhar76/vrs-backend:latest
+        ports:
+        - containerPort: 80
+
+
+        
